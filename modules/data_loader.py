@@ -95,7 +95,7 @@ def get_accommodation_data(nights=8, destination="Agistri"):
         {"Island": "Agistri", "Name": "Aponissos Sunset Retreat", "Type": "Airbnb", "Price Night (€)": 95, "Quality (1-10)": 8.9},
         {"Island": "Agistri", "Name": "Limenaria Traditional House", "Type": "Airbnb", "Price Night (€)": 55, "Quality (1-10)": 7.7},
         {"Island": "Agistri", "Name": "Agistri Blue Hotel", "Type": "Hotel", "Price Night (€)": 85, "Quality (1-10)": 8.4},
-
+        
         # --- MILOS (10 options) ---
         {"Island": "Milos", "Name": "Milos Cove Luxury Suites", "Type": "Hotel", "Price Night (€)": 160, "Quality (1-10)": 9.6},
         {"Island": "Milos", "Name": "Pollonia Sunset Cave House", "Type": "Airbnb", "Price Night (€)": 110, "Quality (1-10)": 9.2},
