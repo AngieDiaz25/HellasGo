@@ -3,190 +3,179 @@ import pandas as pd
 import datetime
 from modules.data_loader import get_route_data, get_accommodation_data, get_ferry_schedule_data, get_island_metadata
 
-# Configuración básica de la página
 st.set_page_config(page_title="HellasGo", page_icon="⛴️", layout="wide")
 
-st.title("⛴️ HellasGo: Optimizador de Viaje Inteligente")
-st.markdown("**Destinos:** Milos, Halki, Symi, Agistri, Tinos")
+st.title("⛴️ HellasGo: Smart Trip Optimizer")
+st.markdown("**Destinations:** Milos, Halki, Symi, Agistri, Tinos")
 
-# Menú lateral avanzado
-st.sidebar.header("Parámetros del Viaje")
+st.sidebar.header("Trip Parameters")
 
-origen_seleccionado = st.sidebar.selectbox(
-    "✈️ Ciudad de Origen", 
-    ["Valencia (VLC)", "Madrid (MAD)", "Ámsterdam (AMS)"]
+origin_selected = st.sidebar.selectbox(
+    "✈️ Origin City", 
+    ["Valencia (VLC)", "Madrid (MAD)", "Amsterdam (AMS)"]
 )
-codigo_origen = origen_seleccionado[-4:-1] 
+origin_code = origin_selected[-4:-1] 
 
-fecha_ida = st.sidebar.date_input(
-    "📅 Fecha de Salida",
+departure_date = st.sidebar.date_input(
+    "📅 Departure Date",
     value=datetime.date(2027, 5, 2),
     min_value=datetime.date(2027, 4, 20),
     max_value=datetime.date(2027, 5, 20)
 )
 
-noches_estancia = st.sidebar.number_input(
-    "🌙 Número de noches",
+stay_nights = st.sidebar.number_input(
+    "🌙 Number of Nights",
     min_value=1,
     max_value=15,
     value=8,
     step=1
 )
 
-fecha_regreso_sugerida = fecha_ida + datetime.timedelta(days=noches_estancia)
+suggested_return_date = departure_date + datetime.timedelta(days=stay_nights)
 
-fecha_vuelta = st.sidebar.date_input(
-    "📅 Fecha de Regreso",
-    value=fecha_regreso_sugerida,
-    min_value=fecha_ida + datetime.timedelta(days=1),
+return_date = st.sidebar.date_input(
+    "📅 Return Date",
+    value=suggested_return_date,
+    min_value=departure_date + datetime.timedelta(days=1),
     max_value=datetime.date(2027, 5, 30)
 )
 
-if fecha_vuelta <= fecha_ida:
-    st.sidebar.error("⚠️ La fecha de regreso debe ser posterior a la de salida.")
+if return_date <= departure_date:
+    st.sidebar.error("⚠️ The return date must be after the departure date.")
     st.stop()
 
-noches_estancia = (fecha_vuelta - fecha_ida).days
+stay_nights = (return_date - departure_date).days
 
-# Filtro por Estilo de Viaje / Vibe
-st.sidebar.header("✨ Estilo de Viaje Preferido")
-vibe_filtro = st.sidebar.selectbox(
-    "Filtrar por Vibe",
-    ["Todos", "Playas paradisíacas", "Tranquilidad", "Romántico/Relajado", "Gastronomía", "Pueblos tradicionales"]
+st.sidebar.header("✨ Preferred Travel Vibe")
+vibe_filter = st.sidebar.selectbox(
+    "Filter by Vibe",
+    ["All", "Paradise Beaches", "Quiet", "Romantic/Relaxed", "Gastronomy", "Traditional Villages"]
 )
 
-# Simulador de Presupuesto Máximo
-st.sidebar.header("💰 Restricción Presupuestaria")
-presupuesto_maximo = st.sidebar.number_input(
-    "Presupuesto Máximo Total (€)",
+st.sidebar.header("💰 Budget Restriction")
+max_budget = st.sidebar.number_input(
+    "Maximum Total Budget (€)",
     min_value=300,
     max_value=3000,
     value=1200,
     step=50
 )
 
-st.sidebar.header("¿Qué es más importante?")
-peso_precio = st.sidebar.slider("Ahorrar dinero", 0.0, 1.0, 0.5)
-peso_tiempo = st.sidebar.slider("Llegar rápido", 0.0, 1.0, 0.3)
-peso_calidad = st.sidebar.slider("Calidad del alojamiento", 0.0, 1.0, 0.2)
+st.sidebar.header("What matters most to you?")
+weight_price = st.sidebar.slider("Save money", 0.0, 1.0, 0.5)
+weight_time = st.sidebar.slider("Arrive quickly", 0.0, 1.0, 0.3)
+weight_quality = st.sidebar.slider("Accommodation quality", 0.0, 1.0, 0.2)
 
-st.sidebar.header("🏨 Explorador de Alojamientos")
-isla_seleccionada_hotel = st.sidebar.selectbox(
-    "Seleccionar Isla para Hoteles",
+st.sidebar.header("🏨 Accommodation Explorer")
+island_selected_hotel = st.sidebar.selectbox(
+    "Select Island for Hotels",
     ["Agistri", "Milos", "Tinos", "Symi", "Halki"]
 )
 
-# Carga de datos
-df_rutas = get_route_data(codigo_origen, str(fecha_ida), str(fecha_vuelta))
-df_alojamiento_resumen, df_hoteles_isla = get_accommodation_data(noches_estancia, isla_seleccionada_hotel)
-df_ferrys = get_ferry_schedule_data()
+df_routes = get_route_data(origin_code, str(departure_date), str(return_date))
+df_accommodation_summary, df_hotels_island = get_accommodation_data(stay_nights, island_selected_hotel)
+df_ferries = get_ferry_schedule_data()
 df_metadata = get_island_metadata()
 
-# Unir datos maestros
-df_master = pd.merge(df_rutas, df_alojamiento_resumen, on="Isla")
-df_master = pd.merge(df_master, df_ferrys[["Isla", "Ferry (€)"]], on="Isla", suffixes=("_old", ""))
+df_master = pd.merge(df_routes, df_accommodation_summary, on="Island")
+df_master = pd.merge(df_master, df_ferries[["Island", "Ferry (€)"]], on="Island", suffixes=("_old", ""))
 if "Ferry (€)_old" in df_master.columns:
     df_master = df_master.drop(columns=["Ferry (€)_old"])
 
-df_master = pd.merge(df_master, df_metadata, on="Isla")
+df_master = pd.merge(df_master, df_metadata, on="Island")
 
-# Cálculo del coste total incluyendo gasto diario estimado de vida y ocio
-df_master["Gasto Diario Total (€)"] = df_master["Gasto Diario Est. (€/día)"] * noches_estancia
-df_master["Costo Total (€)"] = df_master["Vuelo (€)"] + df_master["Ferry (€)"] + df_master["Alojamiento Total (€)"] + df_master["Gasto Diario Total (€)"]
+df_master["Total Daily Cost (€)"] = df_master["Est. Daily Cost (€/day)"] * stay_nights
+df_master["Total Cost (€)"] = df_master["Flight (€)"] + df_master["Ferry (€)"] + df_master["Total Accommodation (€)"] + df_master["Total Daily Cost (€)"]
 
-# Bonificación por Vibe
-if vibe_filtro != "Todos":
-    df_master["Puntuacion_Vibe"] = df_master["Etiquetas"].apply(lambda tags: 15 if vibe_filtro in tags else 0)
+if vibe_filter != "All":
+    df_master["Vibe_Score"] = df_master["Tags"].apply(lambda tags: 15 if vibe_filter in tags else 0)
 else:
-    df_master["Puntuacion_Vibe"] = 0
+    df_master["Vibe_Score"] = 0
 
-max_precio = df_master["Costo Total (€)"].max()
-max_tiempo = df_master["Tiempo Total (h)"].max()
+max_price = df_master["Total Cost (€)"].max()
+max_time = df_master["Total Time (h)"].max()
 
-df_master["Puntuación"] = (
-    ((1 - (df_master["Costo Total (€)"] / max_precio)) * peso_precio * 100) +
-    ((1 - (df_master["Tiempo Total (h)"] / max_tiempo)) * peso_tiempo * 100) +
-    ((df_master["Calidad (1-10)"] / 10) * peso_calidad * 100) +
-    df_master["Puntuacion_Vibe"]
+df_master["Score"] = (
+    ((1 - (df_master["Total Cost (€)"] / max_price)) * weight_price * 100) +
+    ((1 - (df_master["Total Time (h)"] / max_time)) * weight_time * 100) +
+    ((df_master["Quality (1-10)"] / 10) * weight_quality * 100) +
+    df_master["Vibe_Score"]
 )
-df_master = df_master.sort_values(by="Puntuación", ascending=False).round(1)
+df_master = df_master.sort_values(by="Score", ascending=False).round(1)
 
-# Alerta de presupuesto
-df_master["Cumple Presupuesto"] = df_master["Costo Total (€)"] <= presupuesto_maximo
+df_master["Meets Budget"] = df_master["Total Cost (€)"] <= max_budget
 
-# Pestañas de la aplicación
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🏆 Optimizador y Clasificación", 
-    "📊 Gráfico de Costes", 
-    "🍔 Vida Diaria y Estilo",
-    "🏨 Alojamientos (10 por Isla)", 
-    "⚓ Horarios y Ferris"
+    "🏆 Optimizer & Ranking", 
+    "📊 Cost Breakdown Chart", 
+    "🍔 Daily Life & Vibe",
+    "🏨 Accommodations (10 per Island)", 
+    "⚓ Ferries & Schedules"
 ])
 
 with tab1:
     col1, col2 = st.columns([2, 1])
     with col1:
-        st.subheader("Clasificación de Destinos (Multicriterio)")
-        st.markdown(f"Filtro de presupuesto activo: **Máximo €{presupuesto_maximo}**")
-        
-        df_display = df_master[["Isla", "Tiempo Total (h)", "Costo Total (€)", "Cumple Presupuesto", "Puntuación"]].copy()
-        df_display["Asequible"] = df_display["Cumple Presupuesto"].apply(lambda x: "✅ Sí" if x else "❌ Excede")
-        st.dataframe(df_display[["Isla", "Tiempo Total (h)", "Costo Total (€)", "Asequible", "Puntuación"]], hide_index=True)
-        
-    with col2:
-        ganador = df_master.iloc[0]
-        st.success("🏆 Mejor Opción Actual")
-        st.metric(label=f"Destino: {ganador['Isla']}", value=f"{ganador['Puntuación']} pts")
-        st.write(f"**Tiempo de viaje:** {ganador['Tiempo Total (h)']} hrs")
-        st.write(f"**Gasto total estimado:** €{ganador['Costo Total (€)']}")
-        if ganador["Cumple Presupuesto"]:
-            st.markdown("✅ **¡Entra dentro de tu presupuesto!**")
-        else:
-            st.markdown("⚠️ **Supera ligeramente el presupuesto introducido.**")
-        st.info(f"📅 Del {fecha_ida} al {fecha_vuelta} ({noches_estancia} noches)")
+        st.subheader("Destination Ranking (Multi-criteria)")
+        st.markdown(f"Active budget filter: **Maximum €{max_budget}**")
 
-        # Botón de Exportación a Markdown / Informe descargable (CORREGIDO)
-        informe_md = f"""# Informe de Viaje - HellasGo
-## Destino Recomendado: {ganador['Isla']}
-- **Origen:** {origen_seleccionado}
-- **Fechas:** Del {fecha_ida} al {fecha_vuelta} ({noches_estancia} noches)
-- **Coste Total Estimado:** €{ganador['Costo Total (€)']}
-- Vuelos: €{ganador['Vuelo (€)']}
-- Ferris: €{ganador['Ferry (€)']}
-- Alojamiento (Medio): €{ganador['Alojamiento Total (€)']}
-- Gastos Diarios / Ocio: €{ganador['Gasto Diario Total (€)']}
-- **Estilo / Vibe:** {ganador['Vibe Principal']}
+        df_display = df_master[["Island", "Total Time (h)", "Total Cost (€)", "Meets Budget", "Score"]].copy()
+        df_display["Affordable"] = df_display["Meets Budget"].apply(lambda x: "✅ Yes" if x else "❌ Exceeds")
+        st.dataframe(df_display[["Island", "Total Time (h)", "Total Cost (€)", "Affordable", "Score"]], hide_index=True)
+
+    with col2:
+        winner = df_master.iloc[0]
+        st.success("🏆 Best Current Option")
+        st.metric(label=f"Destination: {winner['Island']}", value=f"{winner['Score']} pts")
+        st.write(f"**Travel time:** {winner['Total Time (h)']} hrs")
+        st.write(f"**Estimated total spend:** €{winner['Total Cost (€)']}")
+        if winner["Meets Budget"]:
+            st.markdown("✅ **Fits within your budget!**")
+        else:
+            st.markdown("⚠️ **Slightly exceeds the entered budget.**")
+        st.info(f"📅 From {departure_date} to {return_date} ({stay_nights} nights)")
+
+        report_md = f"""# Travel Report - HellasGo
+## Recommended Destination: {winner['Island']}
+- **Origin:** {origin_selected}
+- **Dates:** From {departure_date} to {return_date} ({stay_nights} nights)
+- **Estimated Total Cost:** €{winner['Total Cost (€)']}
+  - Flights: €{winner['Flight (€)']}
+  - Ferries: €{winner['Ferry (€)']}
+  - Accommodation (Average): €{winner['Total Accommodation (€)']}
+  - Daily Expenses / Leisure: €{winner['Total Daily Cost (€)']}
+- **Style / Vibe:** {winner['Main Vibe']}
 """
         st.download_button(
-            label="📥 Descargar Plan de Viaje (Markdown)",
-            data=informe_md,
-            file_name=f"HellasGo_Plan_{ganador['Isla']}.md",
+            label="📥 Download Travel Plan (Markdown)",
+            data=report_md,
+            file_name=f"HellasGo_Plan_{winner['Island']}.md",
             mime="text/markdown"
         )
 
 with tab2:
-    st.subheader("📊 Desglose Visual de Costes por Destino (Incluyendo Ocio)")
-    df_chart = df_master.set_index("Isla")[["Vuelo (€)", "Ferry (€)", "Alojamiento Total (€)", "Gasto Diario Total (€)"]]
+    st.subheader("📊 Visual Cost Breakdown by Destination (Including Leisure)")
+    df_chart = df_master.set_index("Island")[["Flight (€)", "Ferry (€)", "Total Accommodation (€)", "Total Daily Cost (€)"]]
     st.bar_chart(df_chart)
 
 with tab3:
-    st.subheader("🍔 Coste de Vida Diario y Estilo de cada Isla")
-    st.markdown("Estimación del coste diario en comidas, tabernas y transporte local, junto con el ambiente principal de cada destino.")
-    st.dataframe(df_metadata[["Isla", "Vibe Principal", "Gasto Diario Est. (€/día)"]], hide_index=True)
+    st.subheader("🍔 Daily Living Cost & Vibe per Island")
+    st.markdown("Estimated daily costs for meals, tavernas, and local transport, along with the core atmosphere of each destination.")
+    st.dataframe(df_metadata[["Island", "Main Vibe", "Est. Daily Cost (€/day)"]], hide_index=True)
 
 with tab4:
-    st.subheader(f"🏨 Opciones en {isla_seleccionada_hotel} (Hoteles y Airbnbs)")
-    st.markdown(f"Listado con las **10 opciones verificadas** para tu estancia de **{noches_estancia} noches**:")
-    
-    st.dataframe(df_hoteles_isla[["Nombre", "Tipo", "Precio Noche (€)", "Alojamiento Total (€)", "Calidad (1-10)"]], hide_index=True)
-    
+    st.subheader(f"🏨 Options in {island_selected_hotel} (Hotels and Airbnbs)")
+    st.markdown(f"List of **10 verified options** for your stay of **{stay_nights} nights**:")
+
+    st.dataframe(df_hotels_island[["Name", "Type", "Price Night (€)", "Total Accommodation (€)", "Quality (1-10)"]], hide_index=True)
+
     st.markdown("---")
-    nombres_alojamientos = df_hoteles_isla["Nombre"].tolist()
-    alojamiento_elegido = st.selectbox("📌 Selecciona tu favorito para calcular detalles:", nombres_alojamientos)
-    
-    detalles_aloj = df_hoteles_isla[df_hoteles_isla["Nombre"] == alojamiento_elegido].iloc[0]
-    st.info(f"Has seleccionado **{detalles_aloj['Nombre']}** ({detalles_aloj['Tipo']}). Coste total para {noches_estancia} noches: **€{detalles_aloj['Alojamiento Total (€)']}** (Calidad: {detalles_aloj['Calidad (1-10)']}/10)")
+    accommodation_names = df_hotels_island["Name"].tolist()
+    chosen_accommodation = st.selectbox("📌 Select your favorite to calculate details:", accommodation_names)
+
+    details_accommod = df_hotels_island[df_hotels_island["Name"] == chosen_accommodation].iloc[0]
+    st.info(f"You selected **{details_accommod['Name']}** ({details_accommod['Type']}). Total cost for {stay_nights} nights: **€{details_accommod['Total Accommodation (€)']}** (Quality: {details_accommod['Quality (1-10)']}/10)")
 
 with tab5:
-    st.subheader("⚓ Información y Horarios de Conexión en Ferry")
-    st.dataframe(df_ferrys, hide_index=True)
+    st.subheader("⚓ Ferry Connection Information & Schedules")
+    st.dataframe(df_ferries, hide_index=True)
