@@ -1,45 +1,45 @@
-# ⛴️ HellasGo: Optimizador Inteligente de Viajes a Grecia
+# ⛴️ HellasGo: Smart Trip Optimizer for Greek Islands
 
-**HellasGo** es una aplicación web interactiva desarrollada en **Streamlit (Python)** diseñada para simplificar y optimizar la planificación de viajes a las islas griegas (enfocada inicialmente en **Agistri, Milos, Tinos, Symi y Halki**). Combina algoritmos de decisión multicriterio, datos de vuelos en tiempo real, opciones reales de alojamiento y estimaciones de costes de vida.
-
----
-
-## 🚀 Características Principales
-
-* **🏆 Optimizador Multicriterio (MCDA):** Pondera de forma dinámica el coste total, el tiempo de transporte y la calidad del alojamiento según las preferencias del usuario.
-* **✈️ Búsqueda en Tiempo Real:** Integración con API de vuelos (RapidAPI - Sky Scrapper) con un robusto sistema de *degradación elegante* (fallback) para garantizar la estabilidad ante fallos de cuota.
-* **🏨 Catálogo de Alojamientos Verificados:** Base de datos curada de **50 opciones reales** (10 por isla) entre hoteles boutique y Airbnbs, con cálculo de precio dinámico según el número de noches.
-* **💰 Simulador de Presupuesto:** Permite establecer un límite de gasto máximo para filtrar y alertar instantáneamente sobre los destinos asequibles.
-* **✨ Filtro por "Vibe" / Estilo de Viaje:** Ajusta las recomendaciones según intereses específicos (playas paradisíacas, tranquilidad, gastronomía, romántico/relajado, etc.).
-* **🍔 Calculadora de Gasto Diario:** Estima el coste de vida local (comidas, tabernas y transporte interno) por cada destino.
-* **📥 Exportador de Informes:** Generador de planes de viaje personalizados descargables en formato Markdown.
-* **⚓ Información de Conexión:** Horarios detallados, frecuencias y puertos de salida para los ferris.
+**HellasGo** is an interactive web application built with **Streamlit (Python)** designed to simplify and optimize trip planning to the Greek islands (focusing on **Agistri, Milos, Tinos, Symi, and Halki**). It combines multi-criteria decision-making algorithms, real-time flight data, verified accommodation options, and daily living cost estimations.
 
 ---
 
-## 🛠️ Stack Tecnológico
+## 🚀 Key Features
+
+* **🏆 Multi-Criteria Decision Optimizer (MCDA):** Dynamically weights total cost, travel time, and accommodation quality based on user preferences.
+* **✈️ Real-Time Flight Search:** Integrated with the RapidAPI Sky-Scrapper flight search engine, featuring a robust fallback system for graceful degradation.
+* **🏨 Verified Accommodation Catalog:** A curated database of **50 real options** (10 per island) spanning boutique hotels and Airbnbs, with dynamic pricing based on the length of stay.
+* **💰 Budget Simulator:** Allows users to set a maximum budget limit to instantly filter and highlight affordable destinations.
+* **✨ Travel Vibe Filter:** Tailors recommendations according to specific interests (paradise beaches, quietude, gastronomy, romantic/relaxed, etc.).
+* **🍔 Daily Cost Calculator:** Estimates local living expenses (meals, tavernas, and internal transport) for each destination.
+* **📥 Report Exporter:** Generates personalized travel plans downloadable in Markdown format.
+* **⚓ Ferry Connection Info:** Detailed schedules, frequencies, and departure ports for all island ferries.
+
+---
+
+## 🛠️ Technology Stack
 
 * **Frontend & UI:** [Streamlit](https://streamlit.io/) (Python)
-* **Manipulación y Análisis de Datos:** `pandas`
-* **Conectividad API / Red:** `requests`
-* **Control de Versiones:** Git & GitHub
-* **Despliegue en la Nube:** Streamlit Community Cloud
+* **Data Manipulation & Analysis:** `pandas`
+* **API Connectivity / Networking:** `requests`
+* **Version Control:** Git & GitHub
+* **Cloud Deployment:** Streamlit Community Cloud
 
 ---
 
-## 📂 Estructura del Proyecto
+## 📂 Project Structure
 ---
 
-## ⚙️ Instalación y Ejecución Local
+## ⚙️ Local Installation & Execution
 
-Si deseas clonar y ejecutar este proyecto en tu propio entorno de desarrollo:
+To run this project locally on your machine:
 
-1. **Clonar el repositorio:**
-2. **Crear y activar un entorno virtual:**
-3. **Instalar las dependencias:**
-4. **Ejecutar la aplicación:**
+1. **Clone the repository:**
+2. **Create and activate a virtual environment:**
+3. **Install dependencies:**
+4. **Run the application:**
 ---
 
-## 🌐 Despliegue en Producción
+## 🌐 Cloud Deployment
 
-La aplicación se encuentra desplegada y accesible en la nube mediante **Streamlit Community Cloud**, garantizando disponibilidad pública y actualización continua integrada directamente con los cambios de la rama `main` de este repositorio.
+The application is deployed and publicly accessible via **Streamlit Community Cloud**, ensuring continuous integration and automatic updates directly linked to the `main` branch of this repository.
